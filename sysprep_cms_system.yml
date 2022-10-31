@@ -1,0 +1,30 @@
+########################################################################################
+##  Copyright (c) Neo4j (2019) All rights reserved 
+    
+##  Name         : sysprep_devops.yml
+
+##  Description  : An Ansible playbook file to run sysprep_devops role on the devops server.
+
+##  Usage        : ansible-playbook -i inv_sysprep_devops -u <REMOTE_USER> sysprep_devops.yml
+
+##  Notes        : Change the remote_user variable to the appropriate OS user (i.e. ec2-user, etc.) to run the playbook 
+   
+########################################################################################
+########################################################################################
+
+---
+- hosts: cms_system
+  connection: local
+  gather_facts: no
+  become: yes
+  become_user: root
+  become_method: sudo
+#  vars_files: 
+#  - vars/nagios.yml
+  
+  roles: 
+    - sysprep_cms_system
+    - sysprep_set_hostname
+
+    # Uncomment if customer user accounts need to be setup.
+    #- sysprep_cms_customer_access

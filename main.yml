@@ -1,0 +1,84 @@
+########################################################################################
+##  Copyright (c) Neo4j (2019) All rights reserved 
+    
+##  Name         : main.yml (sysprep_devops)
+
+##  Description  : An Ansible playbook file to run sysprep on the devops server.
+
+##  Usage        : Invoked when calling parent Ansible playbook sysprep_devops.yml
+
+##  Notes        : This file is NOT designed to be called directly
+   
+########################################################################################
+########################################################################################
+
+---
+
+- name: Ensure group "neo4jcms" exists
+  group:
+    name: neo4jcms
+    state: present
+  delegate_to: localhost
+  
+- name: Ensure group "ansible" exists
+  group:
+    name: ansible
+    state: present
+  delegate_to: localhost
+  
+- name: Create neo4jcms user account
+  user:
+    name: neo4jcms
+    comment: The OS level user for managing Neo4j CMS tasks
+    group: neo4jcms
+    groups: wheel
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+    password: "{{ devops_password_neo4jcms }}"
+  delegate_to: localhost
+
+- name: Create ansible user account
+  user:
+    name: ansible
+    comment: The OS level user for managing Ansible deployments
+    group: ansible
+    groups: wheel
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+    password: "{{ devops_password_ansible }}"
+  delegate_to: localhost
+
+- name: Copy neo4jcms id_rsa.pub with owner and permissions
+  command: cp -p /home/neo4jcms/.ssh/id_rsa.pub /tmp/neo4jcms-id_rsa.pub
+  delegate_to: localhost
+
+- name: Copy ansible id_rsa.pub with owner and permissions
+  command: cp -p /home/ansible/.ssh/id_rsa.pub /tmp/ansible-id_rsa.pub
+  delegate_to: localhost
+
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+  delegate_to: localhost
+  
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+  delegate_to: localhost
+
+- name: Install Sendmail
+  yum:
+    name: sendmail
+    state: present
+
+- name: Install dos2unix
+  yum:
+    name: dos2unix
+    state: present

@@ -1,0 +1,306 @@
+###################################################################
+###################################################################
+##  Copyright (c) Neo4j (2021) All rights reserved 
+##    
+##  Name         : GLOBAL_INVENTORY_TEMPLATE
+##
+##  Description  : An Ansible inventory file for setting up the CMS Server and Neo4j server(s).
+##
+##  Usage        : Used as "-i inv_neo4j_env" option when invoking ansible-playbook command
+##
+##  Notes        : Add the servers by IP, or host name if DNS is in-use.
+##				 : This is a global inventory that needs to be coppied into each modual for use.
+##				 : If an update needs to be made later do not change the Inventory in the moduale
+##				 : Change the global inventory file and then copy.
+##
+###################################################################
+###################################################################
+
+[all:vars]
+
+###############################################################################
+###############################################################################
+###   System Settings		 					    ###
+###############################################################################
+###############################################################################
+
+# It is best to use pass-wordless SSH Keys that have been distributed.
+# If this has not been done and you need to run the playbooks before doing so you can always specify one here.
+# Only uncomment this if you are using a key.
+# Ideally the key you are specificity should be added to the Authorised keys on each of the managed systems.
+#ansible_ssh_private_key_file=keys/
+
+# Set this to yes if you would like the hostname set.
+# Make sure you set the hostname for each host below in the inventory.
+var_set_hostname='yes'
+
+# Set file ulimit on Neo4j system.  Check neo4j documentation before deploy to confirm this is still the recommended setting.
+var_ulimit='60000'
+
+# This create the ansible user with SSH key login only.
+devops_password_ansible='!'
+
+# This create the neo4jcms user with SSH key login only.
+devops_password_neo4jcms='!'
+
+###############################################################################
+###############################################################################
+###   Neo4j Settings	                  				    ###
+###############################################################################
+###############################################################################
+
+neo4j_owner='neo4j'
+
+neo4j_home='/neo4j'
+
+neo4j_version='4.4.10'
+
+neo4j_apoc_version='4.4.0.9'
+
+neo4j_java_version='11'
+
+###############################
+### Neo4j Memory Settings
+###############################
+
+var_init_heap_size='1g'
+
+var_max_heap_size='1g'
+
+var_page_cache='1g'
+
+###############################
+## Neo4j Config Settings
+###############################
+
+var_neo4j_data_dir='/neo4j_data'
+
+###############################
+## Neo4j Cluster Settings
+###############################
+# Note: only include core members in this count not read replicas.
+
+var_init_formation_cluster_size='3'
+
+var_min_cluster_size_runtime='3'
+
+##############################
+## Neo4j DB User Passwords
+###############################
+
+var_current_neo4j_password='neo4j'
+
+neo4j_password_neo4j='welcome'
+
+neo4j_password_neo4jdba='welcome'
+
+##############################
+# Storage settings
+##############################
+
+# This can be used to ether mount the storage or just create the directories on the root partition.
+# yes = partition and mount storage devices.
+# no  = only create directories.
+# n/a = nothing will be done. <- The first run through leave this set. Storage info will be displayed
+var_mount_storage='no'
+
+# Before updating settings below run the playbook with var_mount_storage set to n/a.
+# At the end of the run an output of the storage devices will be shown. 
+# Review to make sure all hosts have the correct storage is lined up to the device names.
+# If needed you can always check this manualy on each host with "lsblk".
+
+# Neo4j Software Path.  Set in the Neo4j Settings section.
+var_storage_neo4j_path="{{ neo4j_home }}"
+
+# Neo4j Software Device Path.
+var_storage_neo4j_device='/dev/sdb'
+
+# Neo4j Software Partition Number - depending the device type the partition numbers may have a letter as well such as p1.
+var_storage_neo4j_partition_num='1'
+
+# Neo4j Data Mount Path.
+var_storage_neo4j_data_path='/neo4j_data'
+
+# Neo4j Data Device Path.
+var_storage_neo4j_data_device='/dev/sdc'
+
+# Neo4j Data Partition Number - depending the device type the partition numbers may have a letter as well such as p1.
+var_storage_neo4j_data_partition_num='1'
+
+# Neo4j Backup Path.
+var_storage_neo4j_backup_path='/neo4j_backup'
+
+# Neo4j Backup Device Path.
+var_storage_neo4j_backup_device='/dev/sdd'
+
+# Neo4j Backup Partition Number - depending the device type the partition numbers may have a letter as well such as p1.
+var_storage_neo4j_backup_partition_num='1'
+
+# Neo4j Txlog Path.
+var_storage_neo4j_txlog_path='/neo4j_txlog'
+
+# Neo4j Txlog Device Path.
+var_storage_neo4j_txlog_device='/dev/sde'
+
+# Neo4j Txlog Partition Number - depending the device type the partition numbers may have a letter as well such as p1.
+var_storage_neo4j_txlog_partition_num='1'
+
+###############################################################################
+###############################################################################
+###   Monitoring Settings													###
+###############################################################################
+###############################################################################
+
+#######################
+###  Nagios
+#######################
+
+# Set the Monitoring level 1, 2 , or 3
+# 1 = Used for Production environments - Predefined configuration where some alerts will go to the pager and others will go to elert.
+# 2 = Used for Pre-Prod environments such as Staging – predefined configuration where all alerts go to elert.
+# 3 = Used for Development environments – predefined configuration where all alerts go to ilert.
+# Note: If you need to change the monitoring level you will need to MANUALLY REMOVE the old Nagios configuration files.
+# So plan accordingly and set the monitoring level correctly the first time.
+mon_lvl='3'
+
+
+# Hostgroup Name in Nagios, should be all lowercase and have no spaces.
+hostgroup_name='dta-test'
+
+# Sets the Alias for server group in Nagios, can have spaces and Caps.
+hostgroup_alias='Dta Test'
+
+# Sets the from_address for Nagios alerts (replace <<<CUSTOMER_NAME>>>, example nagios@neo4j-cms-server.dta.localdomain)
+nagios_from_address=nagios@neo4j-cms-server.dta-test.localdomain
+
+# This lets you setup additional alerting for any email address that would like to receive alerts for this host(s).
+# Set to either y or n.
+host_contact_enabled=n
+
+# Set a name for the contact that will be receiving the alerts for the host(s).
+# Note this must be lowercase.
+host_contact_name=<CHANGE_ME>
+
+# Set the email address or multiple addresses separated by "," with no spaces.
+host_contact_address=<CHANGE_ME>
+
+
+# Set this to the Environment name to be monitored in Nagios.
+# In almost all cases this should match the hostgroup name so no change is needed here.
+# Note: If you need to change the env name you will need to MANUALLY REMOVE the old Nagios configuration files.
+mon_env_name={{ hostgroup_name }}
+
+#var_files=/vars/nagios.yml
+
+
+#######################
+### Grafana
+#######################
+
+
+# Grafana version to install.
+# Version namber is from https://grafana.com/grafana/download under the "Red Hat, CentOS, RHEL, and Fedora" section. 
+grafana_version='7.5.4-1'
+
+# Set the Grafan home path defult is "/usr/share/grafana"
+grafana_home_path='/usr/share/grafana'
+
+# Password to use for the admin user.
+set_grafana_admin_password='Passc0de'
+
+# Password to use for the garfana customer user.
+set_grafana_user_password='password'
+
+#Email to use for the grafana customer user.
+set_user_email='dev@test.com'
+
+
+#######################
+### Prometheus
+#######################
+
+
+
+# Prometheus version to install.
+# Version namber is from https://prometheus.io/download/ amd64 linux version.
+prometheus_version='2.26.0'
+
+# Prometheus storage retention.
+# See this page for more info https://prometheus.io/docs/prometheus/latest/storage/
+prometheus_storage_retention='45d'
+
+#Update the below Target IPs and Hostnames
+core1_ip='192.168.136.105'
+core2_ip='192.168.136.106'
+core3_ip='192.168.136.107'
+core1_hostname='dta-neo4j-test-core1'
+core2_hostname='dta-neo4j-test-core2'
+core3_hostname='dta-neo4j-test-core3'
+
+###############################################################################
+###############################################################################
+###   RDBA Kit Settings													    ###
+###############################################################################
+###############################################################################
+
+#============================================================================
+# Customer environment variables
+#============================================================================
+customer=Space
+customer_environment_type=Dev
+customer_project_name=universe
+
+#============================================================================
+# CMS environment variables
+#============================================================================
+cms_home=${HOME}/neo4jcms
+cms_confdir=${CMS_HOME}/.config
+
+dba_email="elert@neo4j.com"              
+#dba_pager="epage@neo4j.com"              
+dba_pager="elert@neo4j.com"              
+
+sendmail=/usr/sbin/sendmail
+
+#============================================================================
+# Neo4j environment variables
+#============================================================================
+neo4j_user=neo4j
+neo4j_confdir=${NEO4J_HOME}/conf
+neo4j_db=graph.db
+neo4j_bkupdir=/neo4j_backup
+neo4j_bkupret=2
+
+###############################################################################
+###############################################################################
+###   Host Groups   													    ###
+###############################################################################
+###############################################################################
+
+[cms_system]
+# Add IP and IP and hostname of the CMS System below in this format.
+#0.0.0.0 var_hostname=name-of-system
+192.168.136.108 var_hostname=dta-neo4j-test-core4
+[nagios] 
+# Add the IP or hostname of the CMS Server running Nagios.
+#0.0.0.0
+192.168.136.108
+[cluster:children]
+standalone_servers
+core_servers
+read_replica_servers
+
+[core_servers]
+# Add Core servers here in the following format.
+#192.168.136.105 var_server_group=core var_hostname=dta-neo4j-test-core1 enable_backups=yes
+#192.168.136.106 var_server_group=core var_hostname=dta-neo4j-test-core2 enable_backups=no
+#192.168.136.107 var_server_group=core var_hostname=dta-neo4j-test-core3 enable_backups=no
+
+[read_replica_servers]
+# Add Read Replica Servers here in the following format.
+#0.0.0.0 var_server_group=rr var_hostname=name-of-system enable_backups=yes
+
+[standalone_servers]
+# Add Standalone Servers here in the following format.
+#0.0.0.0 var_server_group=sa var_hostname=name-of-system enable_backups=yes
+192.168.136.105 var_server_group=sa var_hostname=dta-neo4j-test-core1 enable_backups=yes
