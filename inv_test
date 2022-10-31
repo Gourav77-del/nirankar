@@ -280,7 +280,7 @@ neo4j_bkupret=2
 [cms_system]
 # Add IP and IP and hostname of the CMS System below in this format.
 #0.0.0.0 var_hostname=name-of-system
-192.168.136.108 var_hostname=dta-neo4j-test-core4
+192.168.136.106 var_hostname=dta-neo4j-test-core2
 [nagios] 
 # Add the IP or hostname of the CMS Server running Nagios.
 #0.0.0.0
